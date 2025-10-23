@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Formulário de Cadastro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,600,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="form-overlay-container">
+        <h2>Ficha Cadastral de Cliente</h2>
+
+        <form autocomplete="off" id="cadastroForm" novalidate="">
+            <div class="etapa ativa" id="etapa0">
+                <fieldset>
+                    <legend>Tipo de Cadastro</legend>
+                    <label>Selecione o tipo de cliente:
+                        <select id="tipo_cliente" name="tipo_cliente" required="">
+                            <option disabled="disabled" selected="selected" value="">Selecione</option>
+                            <option value="fisica">Pessoa Física</option>
+                            <option value="juridica">Pessoa Jurídica / Condomínio</option>
+                        </select>
+                    </label>
+                </fieldset>
+                <div class="botoes-etapa" style="justify-content: flex-end;">
+                    <button class="continuar" id="btn_iniciar" type="button">Iniciar Cadastro</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa1_fisica">
+                <fieldset>
+                    <legend>Dados Pessoais</legend>
+                    <label>Nome Completo:<input id="nome_f" name="nome_f" required="" type="text" /></label>
+                    <div class="grid-2">
+                        <label>CPF:<input class="cpf-mask" id="cpf_f" name="cpf_f" required="" type="text" /></label>
+                        <label>RG:<input class="rg-mask" id="rg_f" name="rg_f" required="" type="text" /></label>
+                    </div>
+                    <label>Data de Nascimento:<input id="nascimento_f" name="nascimento_f" required="" type="date" /></label>
+                </fieldset>
+                <fieldset>
+                    <legend>Endereço Residencial</legend>
+                    <div class="grid-2">
+                        <label>CEP:<input id="cep_f" maxlength="9" name="cep_f" placeholder="00000-000" required="" type="text" /></label>
+                        <label>Número:<input id="numero_f" name="numero_f" required="" type="text" /></label>
+                    </div>
+                    <label>Endereço:<input id="endereco_f" name="endereco_f" required="" type="text" /></label>
+                    <label>Complemento:<input id="complemento_f" name="complemento_f" type="text" /></label>
+                    <div class="grid-2">
+                        <label>Bairro:<input id="bairro_f" name="bairro_f" required="" type="text" /></label>
+                        <label>Cidade:<input id="cidade_f" name="cidade_f" required="" type="text" /></label>
+                        <label>Estado:<input id="estado_f" maxlength="2" name="estado_f" placeholder="UF" required="" type="text" /></label>
+                    </div>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar" data-target="etapa0" type="button">Voltar</button>
+                    <button class="continuar" data-target="etapa2_fisica" type="button">Continuar</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa2_fisica">
+                <fieldset>
+                    <legend>Contatos Pessoais</legend>
+                    <label>Telefone/Celular:<input class="tel-mask" id="telefone_f" name="telefone_f" required="" type="tel" /></label>
+                    <label>E-mail Principal:<input id="email_principal_f" name="email_principal_f" required="" type="email" /></label>
+                    <label>E-mail para Envio de Boleto:<input id="email_boleto_f" name="email_boleto_f" required="" type="email" /></label>
+                    <label>E-mail para Envio de NFE:<input id="email_nfe_f" name="email_nfe_f" required="" type="email" /></label>
+                </fieldset>
+                <fieldset>
+                    <legend>Atividade Profissional</legend>
+                    <label>Profissão / Atividade:<input name="profissao_f" type="text" /></label>
+                    <label>Empresa Atual:<input name="empresa_f" type="text" /></label>
+                    <label>Telefone Comercial:<input class="tel-mask" name="telefone_comercial_f" type="tel" /></label>
+                    <label>Endereço Comercial:<input name="endereco_comercial_f" type="text" /></label>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar" data-target="etapa1_fisica" type="button">Voltar</button>
+                    <button class="continuar" data-target="etapa3_fisica" type="button">Continuar</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa3_fisica">
+                <fieldset>
+                    <legend>Liberação de Material</legend>
+                    <small>Selecione UMA ou MAIS formas de autorização para compras/retiradas.</small>
+                    <div class="checkbox-group">
+                        <label><input name="liberacao_tipo_f[]" type="checkbox" value="Via Telefone" /> Via Telefone</label>
+                        <label><input name="liberacao_tipo_f[]" type="checkbox" value="Via E-mail" /> Via E-mail</label>
+                        <label><input name="liberacao_tipo_f[]" type="checkbox" value="Com Pedido de Compra" /> Com Pedido de Compra</label>
+                        <label><input name="liberacao_tipo_f[]" type="checkbox" value="Com Autorização Formalizada" /> Com Autorização Formalizada</label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Terceiros Autorizados para Retirada de Mercadorias</legend>
+                    <div id="autorizados_container_f"></div>
+                    <button class="add-btn" id="add_auth_btn_f" type="button">Adicionar Pessoa Autorizada</button>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar" data-target="etapa2_fisica" type="button">Voltar</button>
+                    <button class="continuar" data-target="etapa4_fisica" type="button">Continuar</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa4_fisica">
+                <fieldset>
+                    <legend>Informações sobre Obra/Serviço (se aplicável)</legend>
+                    <div class="checkbox-group grid-2">
+                        <label><input name="obra_tipo_f[]" type="checkbox" value="Obra Residencial" /> Obra Residencial</label>
+                        <label><input name="obra_tipo_f[]" type="checkbox" value="Prestação de Serviço" /> Prestação de Serviço</label>
+                        <label><input name="obra_tipo_f[]" type="checkbox" value="Obra Particular" /> Obra Particular</label>
+                        <label><input name="obra_tipo_f[]" type="checkbox" value="Manutenção" /> Manutenção</label>
+                    </div>
+                    <label>Nome da Obra:<input name="obra_nome_f" type="text" /></label>
+                    <label>Endereço da Obra:<input name="obra_endereco_f" type="text" /></label>
+                </fieldset>
+                <fieldset>
+                    <legend>Referências Comerciais</legend>
+                    <div id="referencias_container_f"></div>
+                    <button class="add-btn" id="add_ref_btn_f" type="button">Adicionar Referência</button>
+                </fieldset>
+                <fieldset>
+                    <legend>Como conheceu a loja?</legend>
+                    <div class="radio-group">
+                        <label><input name="conheceu_f" type="radio" value="Mídias Sociais" /> Mídias Sociais</label>
+                        <input name="conheceu_midia_social_qual_f" placeholder="Qual?" style="display:none; margin-top: 5px;" type="text" />
+                        <label><input name="conheceu_f" type="radio" value="Indicação" /> Indicação</label>
+                        <input name="conheceu_indicacao_qual_f" placeholder="Quem indicou?" style="display:none; margin-top: 5px;" type="text" />
+                        <label><input name="conheceu_f" type="radio" value="Passou na frente" /> Passou na frente da loja</label>
+                    </div>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar" data-target="etapa3_fisica" type="button">Voltar</button>
+                    <button class="continuar" data-target="etapa5_fisica" type="button">Continuar</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa5_fisica">
+                <h3>Checklist de Documentos</h3>
+                <p>Para finalizar a análise de crédito, por favor, envie os seguintes documentos junto com este formulário:</p>
+                <ul>
+                    <li>Documento com Foto (RG ou CNH).</li>
+                    <li>Comprovante de Residência recente.</li>
+                    <li>Ficha de Autorização assinada (caso autorize terceiros a retirar materiais).</li>
+                </ul>
+                <fieldset>
+                    <legend>Termos e Autorização</legend>
+                    <div class="checkbox-group">
+                        <label>
+                            <input id="termos_f" name="termos_f" required="" type="checkbox" />
+                            <span> Autorizo o compartilhamento dos meus dados pessoais para os fins desta solicitação de cadastro. Declaro que sou responsável por informar quaisquer alterações nos meus dados cadastrais, contatos e pessoas autorizadas. </span>
+                        </label>
+                    </div>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar voltar-final" data-target="etapa4_fisica" type="button">Voltar</button>
+                    <button class="copiar-dados" type="button">Copiar Dados</button>
+                    <button type="submit">Enviar Cadastro</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa1_juridica">
+                <fieldset>
+                    <legend>Dados da Empresa</legend>
+                    <div class="checkbox-group">
+                        <label><input id="is_condominio" name="is_condominio" type="checkbox" /> Este cadastro é para um Condomínio.</label>
+                    </div>
+                    <label>Razão Social:<input id="razao_social" name="razao_social" required="" type="text" /></label>
+                    <label>Nome Fantasia:<input id="nome_fantasia" name="nome_fantasia" required="" type="text" /></label>
+                    <div class="grid-2">
+                        <label>CNPJ:<input id="cnpj" maxlength="18" name="cnpj" placeholder="00.000.000/0000-00" required="" type="text" /></label>
+                        <label>Inscrição Estadual:<input id="ie_j" name="ie_j" type="text" /></label>
+                    </div>
+                    <label>Ramo de Atividade:<input id="ramo_atividade" name="ramo_atividade" required="" type="text" /></label>
+                </fieldset>
+                <fieldset>
+                    <legend>Endereço da Empresa</legend>
+                    <div class="grid-2">
+                        <label>CEP:<input id="cep_j" maxlength="9" name="cep_j" placeholder="00000-000" required="" type="text" /></label>
+                        <label>Número:<input id="numero_j" name="numero_j" required="" type="text" /></label>
+                    </div>
+                    <label>Endereço:<input id="endereco_j" name="endereco_j" required="" type="text" /></label>
+                    <label>Complemento:<input id="complemento_j" name="complemento_j" type="text" /></label>
+                    <div class="grid-2">
+                        <label>Bairro:<input id="bairro_j" name="bairro_j" required="" type="text" /></label>
+                        <label>Cidade:<input id="cidade_j" name="cidade_j" required="" type="text" /></label>
+                        <label>Estado:<input id="estado_j" maxlength="2" name="estado_j" placeholder="UF" required="" type="text" /></label>
+                    </div>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar" data-target="etapa0" type="button">Voltar</button>
+                    <button class="continuar" data-target="etapa2_juridica" type="button">Continuar</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa2_juridica">
+                <fieldset>
+                    <legend>Contatos da Empresa</legend>
+                    <label>Telefone Principal:<input id="telefone_j" name="telefone_j" placeholder="(00) 00000-0000" required="" type="tel" /></label>
+                    <label>E-mail Principal:<input id="email_principal_j" name="email_principal_j" placeholder="email@dominio.com" required="" type="email" /></label>
+                    <label>E-mail para Envio de Boleto:<input id="email_boleto_j" name="email_boleto_j" placeholder="financeiro@dominio.com" required="" type="email" /></label>
+                    <label>E-mail para Envio de NFE:<input id="email_nfe_j" name="email_nfe_j" placeholder="fiscal@dominio.com" required="" type="email" /></label>
+                </fieldset>
+                <fieldset id="condominio_contatos" style="display:none;">
+                    <legend>Contatos Específicos do Condomínio</legend>
+                    <h3>Contato para Cobrança</h3>
+                    <div class="grid-2">
+                        <label>Telefone:<input class="tel-mask" name="condominio_cobranca_tel" type="tel" /></label>
+                        <label>Celular:<input class="tel-mask" name="condominio_cobranca_cel" type="tel" /></label>
+                    </div>
+                    <label>E-mail Cobrança:<input name="condominio_cobranca_email" type="email" /></label>
+                    <h3>Contato da Administradora</h3>
+                    <div class="grid-2">
+                        <label>Telefone:<input class="tel-mask" name="condominio_adm_tel" type="tel" /></label>
+                        <label>Celular:<input class="tel-mask" name="condominio_adm_cel" type="tel" /></label>
+                    </div>
+                    <label>E-mail Administradora:<input name="condominio_adm_email" type="email" /></label>
+                    <h3>Contato do Síndico(a)</h3>
+                    <div class="grid-2">
+                        <label>Telefone:<input class="tel-mask" name="condominio_sindico_tel" type="tel" /></label>
+                        <label>Celular:<input class="tel-mask" name="condominio_sindico_cel" type="tel" /></label>
+                    </div>
+                    <label>E-mail Síndico:<input name="condominio_sindico_email" type="email" /></label>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar" data-target="etapa1_juridica" type="button">Voltar</button>
+                    <button class="continuar" data-target="etapa3_juridica" type="button">Continuar</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa3_juridica">
+                <fieldset>
+                    <legend>Dados do(s) Sócio(s)</legend>
+                    <small>*Obrigatório apresentar documento de identificação (CNH ou RG) do(s) sócio(s) listado(s).</small>
+                    <div id="socios_container">
+                        <div class="dynamic-item">
+                            <h4>Sócio 1</h4>
+                            <label>Nome Completo:<input name="socio_nome[]" required="" type="text" /></label>
+                            <div class="grid-2">
+                                <label>CPF:<input class="cpf-mask" name="socio_cpf[]" required="" type="text" /></label>
+                                <label>RG:<input class="rg-mask" name="socio_rg[]" required="" type="text" /></label>
+                            </div>
+                            <label>Data de Nascimento:<input name="socio_nascimento[]" required="" type="date" /></label>
+                        </div>
+                    </div>
+                    <button class="add-btn" id="add_socio_btn" type="button">Adicionar outro Sócio</button>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar" data-target="etapa2_juridica" type="button">Voltar</button>
+                    <button class="continuar" data-target="etapa4_juridica" type="button">Continuar</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa4_juridica">
+                <fieldset>
+                    <legend>Informações sobre Obra/Serviço (se aplicável)</legend>
+                    <div class="checkbox-group grid-2">
+                        <label><input name="obra_tipo_j[]" type="checkbox" value="Obra Residencial" /> Obra Residencial</label>
+                        <label><input name="obra_tipo_j[]" type="checkbox" value="Prestação de Serviço" /> Prestação de Serviço</label>
+                        <label><input name="obra_tipo_j[]" type="checkbox" value="Obra Particular" /> Obra Particular</label>
+                        <label><input name="obra_tipo_j[]" type="checkbox" value="Manutenção" /> Manutenção</label>
+                    </div>
+                    <label>Nome da Obra:<input name="obra_nome_j" type="text" /></label>
+                    <label>Endereço da Obra:<input name="obra_endereco_j" type="text" /></label>
+                </fieldset>
+                <fieldset>
+                    <legend>Referências Comerciais</legend>
+                    <div id="referencias_container_j">
+                        <div class="dynamic-item">
+                            <h4>Referência 1</h4>
+                            <label>Tipo:
+                                <select name="ref_tipo_j[]" required="">
+                                    <option value="Fornecedor">Fornecedor</option>
+                                    <option value="Cliente">Cliente</option>
+                                    <option value="Banco">Banco</option>
+                                </select>
+                            </label>
+                            <label>Empresa/Banco:<input name="ref_empresa_j[]" required="" type="text" /></label>
+                            <label>Telefone/Celular:<input class="tel-mask" name="ref_telefone_j[]" required="" type="tel" /></label>
+                        </div>
+                    </div>
+                    <button class="add-btn" id="add_ref_btn_j" type="button">Adicionar Referência</button>
+                </fieldset>
+                <fieldset>
+                    <legend>Outros Contatos na Empresa</legend>
+                    <label>Contato do Comprador (Nome, e-mail, telefone):<textarea name="contato_comprador" rows="2"></textarea></label>
+                    <label>Contato do Financeiro (Nome, e-mail, telefone):<textarea name="contato_financeiro" rows="2"></textarea></label>
+                    <label>Outros Contatos (Nome, e-mail, telefone):<textarea name="contato_outros" rows="2"></textarea></label>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar" data-target="etapa3_juridica" type="button">Voltar</button>
+                    <button class="continuar" data-target="etapa5_juridica" type="button">Continuar</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa5_juridica">
+                <fieldset>
+                    <legend>Liberação de Material</legend>
+                    <small>Selecione UMA ou MAIS formas de autorização para compras/retiradas.</small>
+                    <div class="checkbox-group">
+                        <label><input name="liberacao_tipo_j[]" type="checkbox" value="Via Telefone" /> Via Telefone</label>
+                        <label><input name="liberacao_tipo_j[]" type="checkbox" value="Via E-mail" /> Via E-mail</label>
+                        <label><input name="liberacao_tipo_j[]" type="checkbox" value="Com Pedido de Compra" /> Com Pedido de Compra</label>
+                        <label><input name="liberacao_tipo_j[]" type="checkbox" value="Com Autorização Formalizada" /> Com Autorização Formalizada</label>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <legend>Pessoas Autorizadas para Retirada de Mercadorias</legend>
+                    <small id="auth_note">*Obrigatório apresentar documento de identificação (CNH ou RG) no momento da retirada.</small>
+                    <div id="autorizados_container_j">
+                        <div class="dynamic-item">
+                            <h4>Autorizado 1</h4>
+                            <label>Nome Completo:<input name="auth_nome_j[]" required="" type="text" /></label>
+                            <div class="grid-2">
+                                <label>CPF:<input class="cpf-mask" name="auth_cpf_j[]" required="" type="text" /></label>
+                                <label>RG:<input class="rg-mask" name="auth_rg_j[]" required="" type="text" /></label>
+                            </div>
+                            <label>Departamento:<input name="auth_depto_j[]" type="text" /></label>
+                        </div>
+                    </div>
+                    <button class="add-btn" id="add_auth_btn_j" type="button">Adicionar outra Pessoa Autorizada</button>
+                </fieldset>
+                <fieldset>
+                    <legend>Como conheceu a loja?</legend>
+                    <div class="radio-group">
+                        <label><input name="conheceu_j" type="radio" value="Mídias Sociais" /> Mídias Sociais</label>
+                        <input name="conheceu_midia_social_qual_j" placeholder="Qual?" style="display:none; margin-top: 5px;" type="text" />
+                        <label><input name="conheceu_j" type="radio" value="Indicação" /> Indicação</label>
+                        <input name="conheceu_indicacao_qual_j" placeholder="Quem indicou?" style="display:none; margin-top: 5px;" type="text" />
+                        <label><input name="conheceu_j" type="radio" value="Passou na frente" /> Passou na frente da loja</label>
+                    </div>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar" data-target="etapa4_juridica" type="button">Voltar</button>
+                    <button class="continuar" data-target="etapa6_juridica" type="button">Continuar</button>
+                </div>
+            </div>
+
+            <div class="etapa" id="etapa6_juridica">
+                <h3>Checklist de Documentos</h3>
+                <p>Para finalizar a análise de crédito, por favor, envie os seguintes documentos junto com este formulário:</p>
+                <div id="checklist_pj">
+                    <h4>Para Pessoa Jurídica (Empresas):</h4>
+                    <ul>
+                        <li>Contrato Social com as últimas alterações registradas. (MEI: apresentar Certificado de Microempreendedor Individual).</li>
+                        <li>Balanço atualizado do último período (6 meses).</li>
+                        <li>Documento com foto (RG/CNH) do(s) sócio(s).</li>
+                        <li>Ficha de Autorização assinada (se aplicável).</li>
+                    </ul>
+                </div>
+                <div id="checklist_condominio" style="display:none;">
+                    <h4>Para Condomínios:</h4>
+                    <ul>
+                        <li>Ata da assembleia atualizada, constando o período do mandato do síndico atual.</li>
+                        <li>RG/CPF ou CNH do Síndico.</li>
+                        <li>Ficha de Autorização assinada.</li>
+                    </ul>
+                </div>
+                <fieldset>
+                    <legend>Termos e Autorização</legend>
+                    <div class="checkbox-group">
+                        <label>
+                            <input id="termos_j" name="termos_j" required="" type="checkbox" />
+                            <span> Autorizo o compartilhamento dos dados da empresa, sócio(s) e pessoa física responsável para os fins desta solicitação de cadastro. Declaro que a empresa é responsável por informar quaisquer alterações nos dados cadastrais, contatos e colaboradores autorizados. </span>
+                        </label>
+                    </div>
+                </fieldset>
+                <div class="botoes-etapa">
+                    <button class="voltar voltar-final" data-target="etapa5_juridica" type="button">Voltar</button>
+                    <button class="copiar-dados" type="button">Copiar Dados</button>
+                    <button type="submit">Enviar Cadastro</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="fallbackContainer"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
