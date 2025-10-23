@@ -1,5 +1,6 @@
 (function ($) {
     // --- FUNÇÕES AUXILIARES ---
+    const EMAIL_DESTINO = "liberacao@lina.com.br";
     function mostrarEtapa(id) {
         $('.etapa').removeClass('ativa');
         $('#' + id).addClass('ativa');
@@ -217,16 +218,63 @@
 
     $('#cadastroForm').on('submit', function (e) {
         e.preventDefault();
-        if (!validarEtapa($(this).find('.etapa.ativa'))) { alert('Verifique os campos obrigatórios antes de enviar.'); return; }
-        const emailDestino = "liberacao@lina.com.br";
-        const nomeCliente = $('#nome_f').val() || $('#razao_social').val() || "Novo Cliente";
-        const assunto = "Nova Ficha Cadastral - " + nomeCliente;
+        const $form = $(this);
+        const $etapaAtiva = $form.find('.etapa.ativa');
+        if (!validarEtapa($etapaAtiva)) { alert('Verifique os campos obrigatórios antes de enviar.'); return; }
+
+        const nomeCliente = $('#nome_f').val() || $('#razao_social').val() || 'Novo Cliente';
+        const assunto = `Nova Ficha Cadastral - ${nomeCliente}`;
         const corpoEmail = gerarCorpoTexto();
-        window.location.href = `mailto:${emailDestino}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpoEmail)}`;
-        setTimeout(() => {
-            if (document.hasFocus()) {
-                $('#fallbackContainer').html(`<div><h3>Seu e-mail não abriu?</h3><p>Copie os dados e envie para: <strong>${emailDestino}</strong></p><textarea readonly>${corpoEmail}</textarea><button type="button" class="copiar-dados" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(() => alert('Copiado!'))">Copiar Dados</button></div>`);
-            }
-        }, 2500);
+        const replyTo = $('#email_principal_f').val() || $('#email_principal_j').val() || '';
+
+        const $submitBtn = $etapaAtiva.find('button[type="submit"]');
+        const originalBtnText = $submitBtn.text();
+        $submitBtn.prop('disabled', true).text('Enviando...');
+
+        fetch(`https://formsubmit.co/ajax/${encodeURIComponent(EMAIL_DESTINO)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                _subject: assunto,
+                message: corpoEmail,
+                from_name: nomeCliente,
+                _replyto: replyTo
+            })
+        })
+            .then(async (res) => {
+                let data = null;
+                try { data = await res.json(); } catch (_) { /* ignore */ }
+                if (!res.ok || (data && data.success === false)) {
+                    throw new Error((data && (data.message || data.error)) || 'Falha ao enviar');
+                }
+                return data;
+            })
+            .then(() => {
+                $('#fallbackContainer').html(`
+                    <div>
+                        <h3>Cadastro enviado com sucesso!</h3>
+                        <p>Recebemos sua ficha. Você também pode copiar os dados enviados abaixo, se desejar.</p>
+                        <textarea readonly>${corpoEmail}</textarea>
+                        <button type="button" class="copiar-dados" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(() => alert('Copiado!'))">Copiar Dados</button>
+                    </div>
+                `);
+            })
+            .catch((err) => {
+                console.error('Erro no envio:', err);
+                $('#fallbackContainer').html(`
+                    <div>
+                        <h3>Não foi possível enviar automaticamente.</h3>
+                        <p>Por favor, copie os dados e envie para: <strong>${EMAIL_DESTINO}</strong></p>
+                        <textarea readonly>${corpoEmail}</textarea>
+                        <button type="button" class="copiar-dados" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(() => alert('Copiado!'))">Copiar Dados</button>
+                    </div>
+                `);
+            })
+            .finally(() => {
+                $submitBtn.prop('disabled', false).text(originalBtnText);
+            });
     });
 })(jQuery);
