@@ -216,6 +216,54 @@
         navigator.clipboard.writeText(gerarCorpoTexto()).then(() => alert('Dados copiados para a área de transferência!'));
     });
 
+    // Abre o cliente de e-mail via mailto, com encoding correto e CRLF
+    function abrirMailto({ to, subject, body, cc, bcc }) {
+        const params = [];
+        const bodyCRLF = (body || '').replace(/\n/g, '\r\n');
+        if (subject) params.push('subject=' + encodeURIComponent(subject));
+        if (body) params.push('body=' + encodeURIComponent(bodyCRLF));
+        if (cc) params.push('cc=' + encodeURIComponent(cc));
+        if (bcc) params.push('bcc=' + encodeURIComponent(bcc));
+        const query = params.length ? ('?' + params.join('&')) : '';
+        const url = `mailto:${to}${query}`;
+        const a = document.createElement('a');
+        a.href = url;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        requestAnimationFrame(() => a.remove());
+        return { url, length: url.length };
+    }
+
+    // Gera o conteúdo de um arquivo .eml (rascunho de e-mail)
+    function gerarMensagemEML({ to, subject, body, replyTo }) {
+        const lines = [];
+        lines.push(`To: ${to}`);
+        if (replyTo) lines.push(`Reply-To: ${replyTo}`);
+        lines.push(`Subject: ${subject}`);
+        lines.push('X-Unsent: 1');
+        lines.push('MIME-Version: 1.0');
+        lines.push('Content-Type: text/plain; charset=UTF-8');
+        lines.push('Content-Transfer-Encoding: 8bit');
+        lines.push('');
+        lines.push((body || '').replace(/\r?\n/g, '\r\n'));
+        return lines.join('\r\n');
+    }
+
+    function baixarEML(nomeArquivo, emlConteudo) {
+        const blob = new Blob([emlConteudo], { type: 'message/rfc822' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = nomeArquivo;
+        document.body.appendChild(a);
+        a.click();
+        requestAnimationFrame(() => {
+            a.remove();
+            URL.revokeObjectURL(url);
+        });
+    }
+
     $('#cadastroForm').on('submit', function (e) {
         e.preventDefault();
         const $form = $(this);
@@ -229,52 +277,44 @@
 
         const $submitBtn = $etapaAtiva.find('button[type="submit"]');
         const originalBtnText = $submitBtn.text();
-        $submitBtn.prop('disabled', true).text('Enviando...');
+        $submitBtn.prop('disabled', true).text('Abrindo e-mail...');
 
-        fetch(`https://formsubmit.co/ajax/${encodeURIComponent(EMAIL_DESTINO)}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                _subject: assunto,
-                message: corpoEmail,
-                from_name: nomeCliente,
-                _replyto: replyTo
-            })
-        })
-            .then(async (res) => {
-                let data = null;
-                try { data = await res.json(); } catch (_) { /* ignore */ }
-                if (!res.ok || (data && data.success === false)) {
-                    throw new Error((data && (data.message || data.error)) || 'Falha ao enviar');
-                }
-                return data;
-            })
-            .then(() => {
-                $('#fallbackContainer').html(`
-                    <div>
-                        <h3>Cadastro enviado com sucesso!</h3>
-                        <p>Recebemos sua ficha. Você também pode copiar os dados enviados abaixo, se desejar.</p>
-                        <textarea readonly>${corpoEmail}</textarea>
-                        <button type="button" class="copiar-dados" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(() => alert('Copiado!'))">Copiar Dados</button>
-                    </div>
-                `);
-            })
-            .catch((err) => {
-                console.error('Erro no envio:', err);
-                $('#fallbackContainer').html(`
-                    <div>
-                        <h3>Não foi possível enviar automaticamente.</h3>
-                        <p>Por favor, copie os dados e envie para: <strong>${EMAIL_DESTINO}</strong></p>
-                        <textarea readonly>${corpoEmail}</textarea>
-                        <button type="button" class="copiar-dados" onclick="navigator.clipboard.writeText(this.previousElementSibling.value).then(() => alert('Copiado!'))">Copiar Dados</button>
-                    </div>
-                `);
-            })
-            .finally(() => {
-                $submitBtn.prop('disabled', false).text(originalBtnText);
-            });
+        // Tenta abrir o cliente de e-mail do usuário
+        const { length: mailtoLength } = abrirMailto({
+            to: EMAIL_DESTINO,
+            subject: assunto,
+            body: corpoEmail,
+            // Não definimos Reply-To em mailto (não há suporte amplo)
+        });
+
+        // Monta fallback útil (sempre exibido para orientar o usuário)
+        const eml = gerarMensagemEML({ to: EMAIL_DESTINO, subject: assunto, body: corpoEmail, replyTo });
+        const $fb = $(`#fallbackContainer`).html(`
+            <div>
+                <h3>Abra seu cliente de e-mail para enviar</h3>
+                <p>Tentamos abrir seu cliente de e-mail com a ficha preenchida.<br>
+                Se não abriu ou o conteúdo ficou incompleto, utilize as opções abaixo.</p>
+                <div class="botoes-etapa" style="gap: 8px;">
+                    <button type="button" id="abrir_mailto_btn">Abrir e-mail novamente</button>
+                    <button type="button" id="baixar_eml_btn">Baixar arquivo .eml</button>
+                    <button type="button" class="copiar-dados" id="copiar_dados_btn">Copiar Dados</button>
+                </div>
+                <textarea readonly>${corpoEmail}</textarea>
+                <small>Destinatário: ${EMAIL_DESTINO} • Assunto: ${assunto}</small>
+                ${mailtoLength > 2000 ? '<small style="color:#d9534f">Observação: o conteúdo é grande e pode ser truncado por alguns clientes.</small>' : ''}
+            </div>
+        `);
+
+        $fb.find('#abrir_mailto_btn').on('click', () => abrirMailto({ to: EMAIL_DESTINO, subject: assunto, body: corpoEmail }));
+        $fb.find('#baixar_eml_btn').on('click', () => baixarEML(`Cadastro - ${nomeCliente}.eml`, eml));
+        $fb.find('#copiar_dados_btn').on('click', function () {
+            const txt = $(this).closest('div').find('textarea').val();
+            navigator.clipboard.writeText(txt).then(() => alert('Copiado!'));
+        });
+
+        // Reabilita o botão após breve intervalo
+        setTimeout(() => {
+            $submitBtn.prop('disabled', false).text(originalBtnText);
+        }, 800);
     });
 })(jQuery);
